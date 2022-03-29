@@ -8,7 +8,7 @@
      * @license         GPL-2.0-or-later
      * 
      * Plugin Name:     Custom Endpoints
-     * Plugin URI:      https://github.com/gosoftlab/wordpress-custom-endpoint
+     * Plugin URI:      https://github.com/mbparvezme/wordpress-custom-endpoint
      * Description:     Custom Wordpress rest API endpoints
      * Version:         0.0.1
      * Author:          M B Parvez
