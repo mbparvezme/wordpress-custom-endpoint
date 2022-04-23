@@ -4,7 +4,7 @@
      * Custom Endpoints
      *
      * @author          M B Parvez
-     * @copyright       2021 Gosoft.io
+     * @copyright       M B Parvez & Gosoft.io
      * @license         GPL-2.0-or-later
      * 
      * Plugin Name:     Custom Endpoints
@@ -12,7 +12,7 @@
      * Description:     Custom Wordpress rest API endpoints
      * Version:         0.0.1
      * Author:          M B Parvez
-     * Author URI:      https://mbparvez.me
+     * Author URI:      https://www.mbparvez.me
      * License:         GPL v2 or later
      * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
     */
