@@ -129,6 +129,7 @@
         $author_id          = get_post_field( 'post_author', $post->ID );
 	    $data['id']         = $post->ID;
 	    $data['title']      = $post->post_title;
+	    $data['excerpt']    = $post->post_excerpt;
 	    
 	    if($content)
 	    $data['content']    = $post->post_content;
