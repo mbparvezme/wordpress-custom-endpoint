@@ -125,24 +125,21 @@
 		return $data;
     }
 
+
+
     function create_post_snip($post, $content = FALSE){
         $author_id          = get_post_field( 'post_author', $post->ID );
 	    $data['id']         = $post->ID;
 	    $data['title']      = $post->post_title;
 	    $data['excerpt']    = $post->post_excerpt;
-	    
-	    if($content)
-	    $data['content']    = $post->post_content;
-	    
 	    $data['slug']       = $post->post_name;
-	    $data['views']      = getPostViews($post->ID);
-	    $data['duration']   = ceil(str_word_count($post->post_content) / 225);
-	    $data['date']       = date('d M, Y', strtotime($post->post_date));
 	    $data['img']        = [
 			'thumb'             => get_the_post_thumbnail_url( $post->ID, 'thumbnail' ),
 			'medium'            => get_the_post_thumbnail_url( $post->ID, 'medium' ),
 			'original'          => get_the_post_thumbnail_url( $post->ID, 'large' ),
 		];
+	    
+	    if($content) $data['content']    = $post->post_content;
 
 		$categories = get_the_category( $post->ID );
 		$j = 0;
@@ -154,9 +151,15 @@
 		    $j++;
 		}
 
-		$data['meta']       = [
-			'author_id'         => $author_id,
-			'author_name'       => get_the_author_meta( 'display_name', $author_id )
+		$data['meta']   = [
+    	    'views'     => getPostViews($post->ID),
+    	    'duration'  => ceil(str_word_count($post->post_content) / 225),
+    	    'date'      => date('d M, Y', strtotime($post->post_date)),
+		    'author'    => [
+		        'id'    => $author_id,
+    			'name'  => get_the_author_meta( 'display_name', $author_id ),
+    			'img'   => get_avatar_url( $author_id ),
+		    ]
 		];
 		return $data;
     }
