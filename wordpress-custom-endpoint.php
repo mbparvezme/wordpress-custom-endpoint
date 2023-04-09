@@ -10,12 +10,15 @@
      * Plugin Name:     Custom Endpoints
      * Plugin URI:      https://github.com/mbparvezme/wordpress-custom-endpoint
      * Description:     Custom Wordpress rest API endpoints
-     * Version:         0.0.1
+     * Version:         0.1.0
      * Author:          M B Parvez
      * Author URI:      https://www.mbparvez.me
      * License:         GPL v2 or later
      * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
     */
+
+    // header('Access-Control-Allow-Origin: https://www.mbparvez.me');
+    // header("Access-Control-Allow-Methods: GET, OPTIONS");
 
     function go_posts( $request ){
         $args['post_type']      = 'post';
