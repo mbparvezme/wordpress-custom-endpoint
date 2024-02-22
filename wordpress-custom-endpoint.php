@@ -170,9 +170,13 @@
     function namespace_get_search_args() {
         $args = [];
         $args['s'] = [
-           'description' => esc_html__( 'The search term.', 'namespace' ),
-           'type'        => 'string',
-       ];
+            'description' => esc_html__('The search term.', 'namespace'),
+            'type' => 'string',
+            'validate' => function ($term) {
+                return sanitize_text_field($term);
+            },
+        ];
+        return $args;
     }
 
     function getPostViews($postID){
