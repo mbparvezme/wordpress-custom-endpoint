@@ -10,7 +10,7 @@
  * Plugin Name:     WP Custom Endpoint
  * Plugin URI:      https://github.com/mbparvezme/wp-custom-endpoint
  * Description:     Custom WordPress REST API endpoints for blog.
- * Version:         0.1.0
+ * Version:         2.0.0-alpha2
  * Author:          M B Parvez
  * Author URI:      https://www.mbparvez.me
  * License:         GPL v2 or later
@@ -35,7 +35,5 @@ new WP_Custom_Endpoint();
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links) {
   // Add "Customize" link
   $links[] = '<a href="' . admin_url('admin.php?page=wp-custom-endpoint-settings') . '">Customize</a>';
-  // Add "Delete" link
-  $links[] = '<a href="' . wp_nonce_url(admin_url('plugins.php?action=delete&plugin=' . plugin_basename(__FILE__)), 'delete-plugin_' . plugin_basename(__FILE__)) . '">Delete</a>';
   return $links;
 });
