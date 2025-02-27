@@ -90,8 +90,7 @@ class WP_Custom_Endpoint_Setting
   }
 
   // Render the settings page
-  public function render_settings_page()
-  {
+public function render_settings_page() {
     // Retrieve plugin options
     $options = get_option('wp_custom_endpoint_options');
     $allowed_domains = isset($options['allowed_domains']) ? $options['allowed_domains'] : '';
@@ -100,101 +99,104 @@ class WP_Custom_Endpoint_Setting
     $rate_limit_window = isset($options['rate_limit_window']) ? $options['rate_limit_window'] : 60;
 
     // Handle form submission for adding/deleting domains
-    if (isset($_POST['add_domain'])) {
-      // Add new domain
-      $new_domain = sanitize_text_field($_POST['new_domain']);
-      if (!empty($new_domain)) {
-        $allowed_domains .= ($allowed_domains ? ',' : '') . $new_domain;
-        $options['allowed_domains'] = $allowed_domains;
-        update_option('wp_custom_endpoint_options', $options);
-      }
-    } elseif (isset($_POST['delete_domain'])) {
-      // Delete selected domain
-      $domain_to_delete = sanitize_text_field($_POST['domain_to_delete']);
-      if (!empty($domain_to_delete)) {
-        $domains = explode(',', $allowed_domains);
-        $domains = array_diff($domains, [$domain_to_delete]);
-        $allowed_domains = implode(',', $domains);
-        $options['allowed_domains'] = $allowed_domains;
-        update_option('wp_custom_endpoint_options', $options);
-      }
+    if (isset($_POST['wp_custom_endpoint_nonce']) && wp_verify_nonce($_POST['wp_custom_endpoint_nonce'], 'wp_custom_endpoint_allowed_domains')) {
+        if (isset($_POST['add_domain'])) {
+            // Add new domain
+            $new_domain = sanitize_text_field($_POST['new_domain']);
+            if (!empty($new_domain)) {
+                $allowed_domains .= ($allowed_domains ? ',' : '') . $new_domain;
+                $options['allowed_domains'] = $allowed_domains;
+                update_option('wp_custom_endpoint_options', $options);
+            }
+        } elseif (isset($_POST['delete_domain'])) {
+            // Delete selected domain
+            $domain_to_delete = sanitize_text_field($_POST['domain_to_delete']);
+            if (!empty($domain_to_delete)) {
+                $domains = explode(',', $allowed_domains);
+                $domains = array_diff($domains, [$domain_to_delete]);
+                $allowed_domains = implode(',', $domains);
+                $options['allowed_domains'] = $allowed_domains;
+                update_option('wp_custom_endpoint_options', $options);
+            }
+        }
     }
 
-?>
+    ?>
     <div class="wrap">
-      <h1>WP Custom Endpoint Settings</h1>
+        <h1>WP Custom Endpoint Settings</h1>
 
-      <!-- Allowed Domains Section -->
-      <h2>Allowed Domains</h2>
-      <form method="post" action="">
-        <?php wp_nonce_field('wp_custom_endpoint_allowed_domains', 'wp_custom_endpoint_nonce'); ?>
-        <table class="wp-list-table widefat fixed striped">
-          <thead>
-            <tr>
-              <th>Domain</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php if (!empty($allowed_domains)) : ?>
-              <?php foreach (explode(',', $allowed_domains) as $domain) : ?>
+        <!-- Allowed Domains Section -->
+        <h2>Allowed Domains</h2>
+        <form method="post" action="">
+            <?php wp_nonce_field('wp_custom_endpoint_allowed_domains', 'wp_custom_endpoint_nonce'); ?>
+            <table class="wp-list-table widefat fixed striped">
+                <thead>
+                    <tr>
+                        <th>Domain</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($allowed_domains)) : ?>
+                        <?php foreach (explode(',', $allowed_domains) as $domain) : ?>
+                            <tr>
+                                <td><?php echo esc_html($domain); ?></td>
+                                <td>
+                                    <input type="hidden" name="domain_to_delete" value="<?php echo esc_attr($domain); ?>" />
+                                    <button type="submit" name="delete_domain" class="button">Delete</button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else : ?>
+                        <tr>
+                            <td colspan="2">No domains added yet.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <h3>Add New Domain</h3>
+            <input type="text" name="new_domain" placeholder="Enter a new domain" />
+            <input type="submit" name="add_domain" value="Add Domain" class="button" />
+        </form>
+
+        <!-- Rate Limiting Section -->
+        <h2>Rate Limiting</h2>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('wp_custom_endpoint_options_group');
+            do_settings_sections('wp-custom-endpoint-settings');
+            ?>
+
+            <table class="form-table">
                 <tr>
-                  <td><?php echo esc_html($domain); ?></td>
-                  <td>
-                    <button type="submit" name="delete_domain" value="<?php echo esc_attr($domain); ?>" class="button">Delete</button>
-                  </td>
+                    <th scope="row">Enable Rate Limiting</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wp_custom_endpoint_options[rate_limit_enabled]" value="1" <?php checked($rate_limit_enabled, 1); ?> />
+                            Enable Rate Limiting
+                        </label>
+                    </td>
                 </tr>
-              <?php endforeach; ?>
-            <?php else : ?>
-              <tr>
-                <td colspan="2">No domains added yet.</td>
-              </tr>
-            <?php endif; ?>
-          </tbody>
-        </table>
+                <tr>
+                    <th scope="row">Rate Limit</th>
+                    <td>
+                        <input type="number" name="wp_custom_endpoint_options[rate_limit]" value="<?php echo esc_attr($rate_limit); ?>" min="1" />
+                        <p class="description">Maximum number of requests allowed per time window.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Rate Limit Window (seconds)</th>
+                    <td>
+                        <input type="number" name="wp_custom_endpoint_options[rate_limit_window]" value="<?php echo esc_attr($rate_limit_window); ?>" min="1" />
+                        <p class="description">Time window (in seconds) for the rate limit.</p>
+                    </td>
+                </tr>
+            </table>
 
-        <h3>Add New Domain</h3>
-        <input type="text" name="new_domain" placeholder="Enter a new domain" />
-        <input type="submit" name="add_domain" value="Add Domain" class="button" />
-      </form>
-
-      <!-- Rate Limiting Section -->
-      <h2>Rate Limiting</h2>
-      <form method="post" action="options.php">
-        <?php
-        settings_fields('wp_custom_endpoint_options_group');
-        do_settings_sections('wp-custom-endpoint-settings');
-        ?>
-
-        <table class="form-table">
-          <tr>
-            <th scope="row">Enable Rate Limiting</th>
-            <td>
-              <label>
-                <input type="checkbox" name="wp_custom_endpoint_options[rate_limit_enabled]" value="1" <?php checked($rate_limit_enabled, 1); ?> />
-                Enable Rate Limiting
-              </label>
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Rate Limit</th>
-            <td>
-              <input type="number" name="wp_custom_endpoint_options[rate_limit]" value="<?php echo esc_attr($rate_limit); ?>" min="1" />
-              <p class="description">Maximum number of requests allowed per time window.</p>
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Rate Limit Window (seconds)</th>
-            <td>
-              <input type="number" name="wp_custom_endpoint_options[rate_limit_window]" value="<?php echo esc_attr($rate_limit_window); ?>" min="1" />
-              <p class="description">Time window (in seconds) for the rate limit.</p>
-            </td>
-          </tr>
-        </table>
-
-        <?php submit_button(); ?>
-      </form>
+            <?php submit_button(); ?>
+        </form>
     </div>
-<?php
-  }
+    <?php
+}
 }
