@@ -33,6 +33,12 @@ class WP_Custom_Endpoint_Utility
     return isset($this->options['rate_limit_window']) ? absint($this->options['rate_limit_window']) : 60;
   }
 
+  // Check if rate limiting is enabled
+  public function is_rate_limit_enabled()
+  {
+    return isset($this->options['rate_limit_enabled']) ? (bool) $this->options['rate_limit_enabled'] : false;
+  }
+
   // Check if the request domain is allowed
   public function check_domain_access($request)
   {
@@ -48,8 +54,17 @@ class WP_Custom_Endpoint_Utility
       $domain = parse_url($referer, PHP_URL_HOST);
     }
 
-    // Allow access if the domain is in the allowed list or if no domain is provided (direct access)
-    if (empty($domain) || in_array($domain, $allowed_domains)) {
+    // If no domain is provided (e.g., direct access), deny access
+    if (empty($domain)) {
+      return new WP_Error(
+        'rest_forbidden',
+        __('You are not allowed to access this endpoint.'),
+        ['status' => 403]
+      );
+    }
+
+    // Allow access only if the domain is in the allowed list
+    if (in_array($domain, $allowed_domains)) {
       return true;
     }
 
@@ -60,6 +75,11 @@ class WP_Custom_Endpoint_Utility
   // Check rate limit
   public function check_rate_limit()
   {
+    // Skip rate limiting if it's disabled
+    if (!$this->is_rate_limit_enabled()) {
+      return true;
+    }
+
     $rate_limit = $this->get_rate_limit();
     $rate_limit_window = $this->get_rate_limit_window();
 
