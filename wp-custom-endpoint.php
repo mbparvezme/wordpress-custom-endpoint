@@ -30,3 +30,12 @@ require_once plugin_dir_path(__FILE__) . 'includes/wp-custom-endpoint.php';
 new WP_Custom_Endpoint_Setting();
 new WP_Custom_Endpoint_Utility();
 new WP_Custom_Endpoint();
+
+// Add "Delete" and "Customize" links under the plugin title
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links) {
+  // Add "Customize" link
+  $links[] = '<a href="' . admin_url('admin.php?page=wp-custom-endpoint-settings') . '">Customize</a>';
+  // Add "Delete" link
+  $links[] = '<a href="' . wp_nonce_url(admin_url('plugins.php?action=delete&plugin=' . plugin_basename(__FILE__)), 'delete-plugin_' . plugin_basename(__FILE__)) . '">Delete</a>';
+  return $links;
+});
