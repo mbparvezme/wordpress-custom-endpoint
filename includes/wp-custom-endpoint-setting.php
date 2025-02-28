@@ -40,22 +40,6 @@ class WP_Custom_Endpoint_Setting
       'wp_custom_endpoint_options',      // Option name
       [$this, 'sanitize_settings']       // Sanitization callback
     );
-
-    // // Add a section for allowed domains
-    // add_settings_section(
-    //   'wp_custom_endpoint_allowed_domains_section', // Section ID
-    //   'Allowed Domains',                            // Section title
-    //   [$this, 'allowed_domains_section_text'],      // Callback for section description
-    //   'wp-custom-endpoint-settings'                // Page slug
-    // );
-
-    // // Add a section for rate limiting
-    // add_settings_section(
-    //   'wp_custom_endpoint_rate_limiting_section',   // Section ID
-    //   'Rate Limiting',                              // Section title
-    //   [$this, 'rate_limiting_section_text'],        // Callback for section description
-    //   'wp-custom-endpoint-settings'                // Page slug
-    // );
   }
 
   // Sanitize settings before saving
