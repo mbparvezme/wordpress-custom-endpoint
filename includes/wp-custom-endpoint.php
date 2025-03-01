@@ -1,11 +1,12 @@
 <?php
+namespace WP_Custom_Endpoint;
+
 if (!defined('ABSPATH')) {
   exit;
 }
 
 class WP_Custom_Endpoint
 {
-
   private $utility;
 
   public function __construct()
@@ -16,7 +17,9 @@ class WP_Custom_Endpoint
     add_action('rest_api_init', [$this, 'register_routes']);
   }
 
-  // Register REST API routes
+  /**
+   * Register REST API routes.
+   */
   public function register_routes()
   {
     // Endpoint to fetch posts
@@ -63,23 +66,31 @@ class WP_Custom_Endpoint
     ]);
   }
 
-  // Fetch posts based on request parameters
+  /**
+   * Fetch posts based on request parameters.
+   *
+   * @param WP_REST_Request $request The request object.
+   * @return array|WP_Error List of posts or WP_Error on failure.
+   */
   public function get_posts($request)
   {
-    // Check rate limit
-    $rate_limit_check = $this->utility->check_rate_limit();
+    // Extract the domain from the request headers
+    $domain = $this->get_request_domain($request);
+
+    // Check rate limit for the domain
+    $rate_limit_check = $this->utility->check_rate_limit($domain);
     if (is_wp_error($rate_limit_check)) {
       return $rate_limit_check;
     }
 
     // Prepare query arguments
     $args = [
-      'post_type'      => 'post',
+      'post_type' => 'post',
       'posts_per_page' => $request['per_page'] ?? 12,
-      'paged'          => $request['page'] ?? 1,
-      'orderby'        => $request['orderby'] ?? 'date',
-      'order'          => $request['order'] ?? 'DESC',
-      'post_status'    => 'publish',
+      'paged' => $request['page'] ?? 1,
+      'orderby' => $request['orderby'] ?? 'date',
+      'order' => $request['order'] ?? 'DESC',
+      'post_status' => 'publish',
     ];
 
     // Check if a slug is provided
@@ -114,22 +125,30 @@ class WP_Custom_Endpoint
     }, $posts);
   }
 
-  // Fetch categories based on request parameters
+  /**
+   * Fetch categories based on request parameters.
+   *
+   * @param WP_REST_Request $request The request object.
+   * @return array|WP_Error List of categories or WP_Error on failure.
+   */
   public function get_categories($request)
   {
-    // Check rate limit
-    $rate_limit_check = $this->utility->check_rate_limit();
+    // Extract the domain from the request headers
+    $domain = $this->get_request_domain($request);
+
+    // Check rate limit for the domain
+    $rate_limit_check = $this->utility->check_rate_limit($domain);
     if (is_wp_error($rate_limit_check)) {
       return $rate_limit_check;
     }
 
     // Prepare query arguments
     $args = [
-      'taxonomy'   => 'category',
+      'taxonomy' => 'category',
       'hide_empty' => true,
-      'orderby'    => $request['orderby'] ?? 'name',
-      'order'      => $request['order'] ?? 'ASC',
-      'fields'     => 'all',
+      'orderby' => $request['orderby'] ?? 'name',
+      'order' => $request['order'] ?? 'ASC',
+      'fields' => 'all',
     ];
 
     // Fetch categories
@@ -151,23 +170,31 @@ class WP_Custom_Endpoint
     }, $categories);
   }
 
-  // Fetch pages based on request parameters
+  /**
+   * Fetch pages based on request parameters.
+   *
+   * @param WP_REST_Request $request The request object.
+   * @return array|WP_Error List of pages or WP_Error on failure.
+   */
   public function get_pages($request)
   {
-    // Check rate limit
-    $rate_limit_check = $this->utility->check_rate_limit();
+    // Extract the domain from the request headers
+    $domain = $this->get_request_domain($request);
+
+    // Check rate limit for the domain
+    $rate_limit_check = $this->utility->check_rate_limit($domain);
     if (is_wp_error($rate_limit_check)) {
       return $rate_limit_check;
     }
 
     // Prepare query arguments
     $args = [
-      'post_type'      => 'page',
+      'post_type' => 'page',
       'posts_per_page' => $request['per_page'] ?? 12,
-      'paged'          => $request['page'] ?? 1,
-      'orderby'        => $request['orderby'] ?? 'date',
-      'order'          => $request['order'] ?? 'DESC',
-      'post_status'    => 'publish',
+      'paged' => $request['page'] ?? 1,
+      'orderby' => $request['orderby'] ?? 'date',
+      'order' => $request['order'] ?? 'DESC',
+      'post_status' => 'publish',
     ];
 
     // Check if a slug is provided
@@ -192,11 +219,19 @@ class WP_Custom_Endpoint
     return array_map([$this, 'create_post_snip'], $pages);
   }
 
-  // Search posts based on a search query
+  /**
+   * Search posts based on a search query.
+   *
+   * @param WP_REST_Request $request The request object.
+   * @return array|WP_Error List of posts or WP_Error on failure.
+   */
   public function get_search($request)
   {
-    // Check rate limit
-    $rate_limit_check = $this->utility->check_rate_limit();
+    // Extract the domain from the request headers
+    $domain = $this->get_request_domain($request);
+
+    // Check rate limit for the domain
+    $rate_limit_check = $this->utility->check_rate_limit($domain);
     if (is_wp_error($rate_limit_check)) {
       return $rate_limit_check;
     }
@@ -208,11 +243,11 @@ class WP_Custom_Endpoint
 
     // Prepare query arguments
     $args = [
-      'post_type'      => 'post',
+      'post_type' => 'post',
       'posts_per_page' => $request['per_page'] ?? 12,
-      'paged'          => $request['page'] ?? 1,
-      's'              => $request['s'], // Search query
-      'post_status'    => 'publish',
+      'paged' => $request['page'] ?? 1,
+      's' => $request['s'], // Search query
+      'post_status' => 'publish',
     ];
 
     // Fetch posts
@@ -227,7 +262,13 @@ class WP_Custom_Endpoint
     return array_map([$this, 'create_post_snip'], $posts);
   }
 
-  // Create a post snippet for the API response
+  /**
+   * Create a post snippet for the API response.
+   *
+   * @param WP_Post $post The post object.
+   * @param bool $include_content Whether to include post content.
+   * @return array Formatted post data.
+   */
   private function create_post_snip($post, $include_content = false)
   {
     $author_id = $post->post_author;
@@ -250,13 +291,13 @@ class WP_Custom_Endpoint
     ];
 
     $data['meta'] = [
-      'views'     => $this->get_post_views($post->ID),
-      'duration'  => ceil(str_word_count($post->post_content) / 225),
-      'date'      => date('d M, Y', strtotime($post->post_date)),
-      'author'    => [
-        'id'    => $author_id,
-        'name'  => get_the_author_meta('display_name', $author_id),
-        'img'   => get_avatar_url($author_id),
+      'views' => $this->get_post_views($post->ID),
+      'duration' => ceil(str_word_count($post->post_content) / 225),
+      'date' => date('d M, Y', strtotime($post->post_date)),
+      'author' => [
+        'id' => $author_id,
+        'name' => get_the_author_meta('display_name', $author_id),
+        'img' => get_avatar_url($author_id),
       ]
     ];
 
@@ -269,7 +310,12 @@ class WP_Custom_Endpoint
     return $data;
   }
 
-  // Get post views count
+  /**
+   * Get post views count.
+   *
+   * @param int $postID The post ID.
+   * @return string Formatted views count.
+   */
   private function get_post_views($postID)
   {
     $count_key = 'post_views_count';
@@ -279,10 +325,14 @@ class WP_Custom_Endpoint
       add_post_meta($postID, $count_key, '0');
       return "0";
     }
-    return $count < 1000 ? (int)$count : ($count < 1000000 ? ($count / 1000) . 'k' : ($count / 1000000) . 'm');
+    return $count < 1000 ? (int) $count : ($count < 1000000 ? ($count / 1000) . 'k' : ($count / 1000000) . 'm');
   }
 
-  // Increment post views count
+  /**
+   * Increment post views count.
+   *
+   * @param int $postID The post ID.
+   */
   private function set_post_views($postID)
   {
     $count_key = 'post_views_count';
@@ -290,29 +340,38 @@ class WP_Custom_Endpoint
     update_post_meta($postID, $count_key, $count + 1);
   }
 
-  // Get comments for a post
+  /**
+   * Get comments for a post.
+   *
+   * @param int $post_id The post ID.
+   * @return array List of comments.
+   */
   private function get_post_comments($post_id)
   {
     $comments = get_comments([
       'post_id' => $post_id, // Fetch comments for this post
-      'status'  => 'approve', // Only fetch approved comments
-      'order'   => 'ASC',    // Order comments by date (oldest first)
+      'status' => 'approve', // Only fetch approved comments
+      'order' => 'ASC',    // Order comments by date (oldest first)
     ]);
 
     return array_map(function ($comment) {
       return [
-        'id'           => $comment->comment_ID,
-        'author_name'  => $comment->comment_author,
+        'id' => $comment->comment_ID,
+        'author_name' => $comment->comment_author,
         'author_email' => $comment->comment_author_email,
-        'author_url'   => $comment->comment_author_url,
-        'date'         => $comment->comment_date,
-        'content'      => $comment->comment_content,
-        'avatar'       => get_avatar_url($comment->comment_author_email),
+        'author_url' => $comment->comment_author_url,
+        'date' => $comment->comment_date,
+        'content' => $comment->comment_content,
+        'avatar' => get_avatar_url($comment->comment_author_email),
       ];
     }, $comments);
   }
 
-  // Define search endpoint arguments
+  /**
+   * Define search endpoint arguments.
+   *
+   * @return array Search endpoint arguments.
+   */
   private function get_search_args()
   {
     $args = [];
@@ -324,5 +383,25 @@ class WP_Custom_Endpoint
       },
     ];
     return $args;
+  }
+
+  /**
+   * Extract the domain from the request headers.
+   *
+   * @param WP_REST_Request $request The request object.
+   * @return string The domain.
+   */
+  private function get_request_domain($request)
+  {
+    $origin = $request->get_header('origin');
+    $referer = $request->get_header('referer');
+
+    if (!empty($origin)) {
+      return parse_url($origin, PHP_URL_HOST);
+    } elseif (!empty($referer)) {
+      return parse_url($referer, PHP_URL_HOST);
+    }
+
+    return '';
   }
 }
